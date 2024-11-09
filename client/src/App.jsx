@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import reactLogo from "./assets/react.svg";
 import viteLogo from "/vite.svg";
 import "./App.css";
@@ -11,10 +11,10 @@ function App() {
   const [count, setCount] = useState(0);
   const connection = useSelector((state) => state.connection);
 
-  const init = async () => {
+  const increment = async () => {
     const provider = new RpcProvider({
       nodeUrl:
-        "https://starknet-goerli.g.alchemy.com/v2/z_ZWlsOXWnNNXqo9hveLbeX4QDNycdA9",
+        "https://starknet-sepolia.g.alchemy.com/starknet/version/rpc/v0_7/NC_mjlIJfcEpaOhs3JB4JHcjFQhcFOrs",
     });
 
     const ContAbi = await provider.getClassAt(contractaddress);
@@ -24,14 +24,64 @@ function App() {
       contractaddress,
       connection?.provider
     );
-    const address = connection?.address;
-    const value = {
-      level: 10,
-    };
+    const address = connection.address;
+    console.log("wallet address", address);
     console.log("contract details", newContract);
-    const response = await newContract.register_user(address, value);
-    console.log(">> firstresponse", response);
+    const response = await newContract.increment();
+    console.log(">> response", response);
   };
+
+  const decrement = async () => {
+    const provider = new RpcProvider({
+      nodeUrl:
+        "https://starknet-sepolia.g.alchemy.com/starknet/version/rpc/v0_7/NC_mjlIJfcEpaOhs3JB4JHcjFQhcFOrs",
+    });
+
+    const ContAbi = await provider.getClassAt(contractaddress);
+    console.log(">> contract abi", ContAbi);
+    const newContract = new Contract(
+      ContAbi.abi,
+      contractaddress,
+      connection?.provider
+    );
+    const address = connection.address;
+    console.log("wallet address", address);
+    console.log("contract details", newContract);
+    const response = await newContract.decrement();
+    console.log(">> response", response);
+  };
+
+  const getValue = async () => {
+    const provider = new RpcProvider({
+      nodeUrl:
+        "https://starknet-sepolia.g.alchemy.com/starknet/version/rpc/v0_7/NC_mjlIJfcEpaOhs3JB4JHcjFQhcFOrs",
+    });
+
+    const contractClass = await provider.getClassAt(contractaddress);
+    const contract = new Contract(
+      contractClass.abi,
+      contractaddress,
+      connection?.provider
+    );
+
+    const address = connection.address;
+    console.log("wallet address", address);
+    console.log("contract details", contract);
+
+    // Call the contract function
+    const response = await contract.getValue();
+
+    console.log(">> response", response);
+
+    // No need for .flat(), since the response is a single value
+    console.log("Current value:", response);
+  };
+
+  useEffect(() => {
+    if (connection.provider) {
+      getValue();
+    }
+  }, [connection]);
 
   return (
     <>
@@ -45,17 +95,13 @@ function App() {
         </a>
       </div>
       <h1>Vite + React</h1>
-      <div className="card">
+      <div className="flex gap-4 mt-5">
         <button onClick={() => setCount((count) => count + 1)}>
           count is {count}
         </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
+        <button onClick={increment}>Increment</button>
+        <button onClick={decrement}>Decrement</button>
       </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
     </>
   );
 }

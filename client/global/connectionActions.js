@@ -1,7 +1,7 @@
 export const setConnectionDetails = (connection) => {
   const connectionDetails = {
     provider: connection.provider,
-    address: connection.account.address,
+    address: connection?.provider?.address,
   };
 
   return {
